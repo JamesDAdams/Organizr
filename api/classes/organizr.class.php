@@ -68,6 +68,7 @@ class Organizr
 	use UptimeKumaHomepageItem;
 	use JellyStatHomepageItem;
 	use PromPageHomepageItem;
+	use KomgaHomepageItem;
 
 
 	// ===================================
@@ -115,7 +116,7 @@ class Organizr
 			'API Folder' => dirname(__DIR__, 1) . DIRECTORY_SEPARATOR
 		];
 		// Temp Set Errors
-		$this->errors = E_ERROR;//E_ALL & ~E_NOTICE
+		$this->errors = E_ALL & ~E_DEPRECATED & ~E_NOTICE;
 		// Set current time
 		$this->currentTime = gmdate('Y-m-d\TH:i:s\Z');
 		// Set variable if install is for official docker
@@ -194,15 +195,18 @@ class Organizr
 		$userConfigPath = dirname(__DIR__, 2) . DIRECTORY_SEPARATOR . 'data' . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'config.php';
 		if (file_exists($userConfigPath) && file_exists($oldUserConfigPath)) {
 			$this->userConfigPath = $userConfigPath;
-		} elseif (file_exists($oldUserConfigPath)) {
+		}
+		elseif (file_exists($oldUserConfigPath)) {
 			$this->makeDir(dirname(__DIR__, 2) . DIRECTORY_SEPARATOR . 'data' . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR);
 			if ($this->rcopy($oldUserConfigPath, $userConfigPath)) {
 				$this->userConfigPath = $userConfigPath;
 				@unlink($oldUserConfigPath);
-			} else {
+			}
+			else {
 				$this->userConfigPath = $oldUserConfigPath;
 			}
-		} else {
+		}
+		else {
 			$this->userConfigPath = $userConfigPath;
 		}
 	}
@@ -270,10 +274,12 @@ class Organizr
 		if ($databaseConnection) {
 			try {
 				$this->db = new Connection($databaseConnection);
-			} catch (Dibi\Exception $e) {
+			}
+			catch (Dibi\Exception $e) {
 				$this->db = null;
 			}
-		} else {
+		}
+		else {
 			$this->db = null;
 		}
 	}
@@ -293,11 +299,13 @@ class Organizr
 		if ($databaseConnection) {
 			try {
 				$this->otherDb = new Connection($databaseConnection);
-			} catch (Dibi\Exception $e) {
+			}
+			catch (Dibi\Exception $e) {
 				$this->prettyPrint($e->getMessage());
 				$this->otherDb = null;
 			}
-		} else {
+		}
+		else {
 			$this->otherDb = null;
 		}
 	}
@@ -366,11 +374,13 @@ class Organizr
 					if (isset($this->getallheadersi()[strtolower($this->config['authProxyHeaderName'])]) || isset($this->getallheadersi()[strtolower($this->config['authProxyHeaderNameEmail'])])) {
 						$this->coookieSeconds('set', 'organizrOAuth', 'true', 20000, false);
 						$this->setLoggerChannel('OAuth')->info('OAuth pre-check passed - adding organizrOAuth cookie', $data);
-					} else {
+					}
+					else {
 						$data = array_merge($data, ['headers' => $this->getallheadersi()]);
 						$this->setLoggerChannel('OAuth')->debug('Headers not set', $data);
 					}
-				} else {
+				}
+				else {
 					$this->setLoggerChannel('OAuth')->debug('OAuth not triggered', $data);
 				}
 			}
@@ -404,7 +414,8 @@ class Organizr
 			];
 			if ($disk['free']['raw'] <= $diskLevels['error']) {
 				die($this->showHTML('Low Disk Space', 'You are dangerously low on disk space.<br/>There is only ' . $disk['free']['human_readable'] . ' remaining.<br/><b>Percent Used = ' . $disk['used']['percent_used'] . '%</b>'));
-			} elseif ($disk['free']['raw'] <= $diskLevels['warn']) {
+			}
+			elseif ($disk['free']['raw'] <= $diskLevels['warn']) {
 				$this->warnings[] = 'You are low on disk space.  There is only ' . $disk['free']['human_readable'] . ' remaining.  This warning shows up because you are past the warning threshold of ' . $diskLevels['warn_human_readable'];
 			}
 		}
@@ -453,7 +464,8 @@ class Organizr
 				'used' => $this->getUsedSpace($directory),
 				'total' => $this->getDiskSpace($directory),
 			];
-		} else {
+		}
+		else {
 			return [
 				'free' => 'error accessing path',
 				'used' => 'error accessing path',
@@ -590,7 +602,8 @@ class Organizr
 		if ($this->config['allowCollapsableSideMenu']) {
 			if ($this->config['sideMenuCollapsed']) {
 				return '<a class="toggle-side-menu" href="javascript:void(0)"><i class="ti-menu fa-fw"></i></a>';
-			} else {
+			}
+			else {
 				return '<a class="toggle-side-menu hidden" href="javascript:void(0)"><i class="ti-menu fa-fw"></i></a>';
 			}
 		}
@@ -650,7 +663,8 @@ class Organizr
 			if (isset($groupParam)) {
 				if (is_numeric($groupParam)) {
 					$group = (int)$groupParam;
-				} else {
+				}
+				else {
 					$group = $this->getTabGroupByTabName($groupParam);
 				}
 			}
@@ -660,7 +674,8 @@ class Organizr
 				$currentUser = $this->user['username'];
 				$currentGroup = $this->user['groupID'];
 				$currentEmail = $this->user['email'];
-			} else {
+			}
+			else {
 				$currentUser = 'Guest';
 				$currentGroup = $this->getUserLevel();
 				$currentEmail = 'guest@guest.com';
@@ -704,20 +719,24 @@ class Organizr
 					$responseMessage = 'User is authorized';
 					$this->setAPIResponse('success', $responseMessage, 200, $userInfo);
 					$this->logger->debug($responseMessage, $userInfo);
-				} else {
+				}
+				else {
 					if (!$redirect) {
 						$this->setAPIResponse('error', $responseMessage, 401, $userInfo);
 						$this->logger->debug($responseMessage, $userInfo);
-					} else {
+					}
+					else {
 						exit(http_response_code(401) . header($redirect));
 					}
 				}
-			} else {
+			}
+			else {
 				$this->setAPIResponse('error', 'Missing info', 401);
 				$this->logger->debug('Missing info', $userInfo);
 			}
 			return true;
-		} else {
+		}
+		else {
 			$this->setAPIResponse('error', 'Organizr is not setup or an error occurred', 401);
 			return false;
 		}
@@ -736,10 +755,12 @@ class Organizr
 				$api = json_decode($response->body, true);
 				$this->setResponse(200, null, $api);
 				return true;
-			} else {
+			}
+			else {
 				$this->setResponse(500, 'An error occurred', null);
 			}
-		} catch (Requests_Exception $e) {
+		}
+		catch (Requests_Exception $e) {
 			$this->setResponse(500, 'An error occurred', $e->getMessage());
 		}
 		return false;
@@ -789,14 +810,15 @@ class Organizr
 	{
 		if (isset($GLOBALS['api']['response']['exceptions'])) {
 			$this->prettyPrint($GLOBALS['api']['response']['exceptions'], true);
-		} else {
+		}
+		else {
 			$this->prettyPrint('No Errors');
 		}
 	}
 
 	public function setAPIErrorResponse($number, $message, $file, $line)
 	{
-		if (!(error_reporting() & $number)) {
+		if (!(error_reporting()& $number)) {
 			return;
 		}
 		$exceptions = [
@@ -865,7 +887,7 @@ class Organizr
 			'line' => $line
 		];
 		$this->handleError($number, $message, $file, $line);
-		//$this->prettyPrint($error, true);
+	//$this->prettyPrint($error, true);
 	}
 
 	public function handleError($number, $message, $file, $line, $type)
@@ -875,7 +897,8 @@ class Organizr
 		error_log($error);
 		if ($this->dev) {
 			$log = true;
-		} else {
+		}
+		else {
 			if ($type == 'errors') {
 				$log = true;
 			}
@@ -907,13 +930,15 @@ class Organizr
 			case 'POST':
 				if (stripos($request->getHeaderLine('Content-Type'), 'application/json') !== false) {
 					return $decode ? json_decode(file_get_contents('php://input', 'r'), true) : file_get_contents('php://input', 'r');
-				} else {
+				}
+				else {
 					return $request->getParsedBody();
 				}
 			default:
 				if (stripos($request->getHeaderLine('Content-Type'), 'application/json') !== false) {
 					return $decode ? json_decode(file_get_contents('php://input', 'r'), true) : file_get_contents('php://input', 'r');
-				} else {
+				}
+				else {
 					return null;
 				}
 		}
@@ -938,9 +963,11 @@ class Organizr
 					$GLOBALS['plugins'][$key]['enabled'] = $this->config[$value['configPrefix'] . '-enabled'] ?? false;
 					if ($returnType == 'all') {
 						$pluginList[$key] = $GLOBALS['plugins'][$key];
-					} elseif ($returnType == 'enabled' && $GLOBALS['plugins'][$key]['enabled'] == true) {
+					}
+					elseif ($returnType == 'enabled' && $GLOBALS['plugins'][$key]['enabled'] == true) {
 						$pluginList[$key] = $GLOBALS['plugins'][$key];
-					} elseif ($returnType == 'disabled' && $GLOBALS['plugins'][$key]['enabled'] == false) {
+					}
+					elseif ($returnType == 'disabled' && $GLOBALS['plugins'][$key]['enabled'] == false) {
 						$pluginList[$key] = $GLOBALS['plugins'][$key];
 					}
 				}
@@ -1067,7 +1094,8 @@ class Organizr
 		$information = $this->getAllThemesInformation();
 		if (isset($information[$theme])) {
 			return $information[$theme];
-		} else {
+		}
+		else {
 			return null;
 		}
 	}
@@ -1087,7 +1115,8 @@ class Organizr
 		$themes = $this->config['installedThemes'];
 		if (is_array($themes)) {
 			return $themes;
-		} else {
+		}
+		else {
 			return [];
 		}
 	}
@@ -1189,7 +1218,8 @@ class Organizr
 								if ($info->getFilename() == 'settings.js') {
 									$continue = true;
 								}
-							} else {
+							}
+							else {
 								if ($info->getFilename() !== 'settings.js') {
 									$continue = true;
 								}
@@ -1267,9 +1297,10 @@ class Organizr
 			if (isset($this->config['dbLocation']) && isset($this->config['dbName'])) {
 				$db = is_writable($this->config['dbLocation'] . $this->config['dbName']);
 				if (!$db) {
-					//die($this->showHTML('Organizr DB is not writable!', 'Please check permissions and/or disk space'));
+				//die($this->showHTML('Organizr DB is not writable!', 'Please check permissions and/or disk space'));
 				}
-			} else {
+			}
+			else {
 				die($this->showHTML('Config File Malformed', 'dbLocation and/or dbName is not listed in config.php'));
 			}
 		}
@@ -1331,7 +1362,8 @@ class Organizr
 				return true;
 			}
 			return false;
-		} else {
+		}
+		else {
 			return $output;
 		}
 	}
@@ -1343,7 +1375,8 @@ class Organizr
 		if ($current === false) {
 			//$current = $this->loadConfig();
 			$current = $this->config;
-		} elseif (is_string($current) && is_file($current)) {
+		}
+		elseif (is_string($current) && is_file($current)) {
 			$current = $this->loadConfig($current);
 		}
 		// Inject Parts
@@ -1360,7 +1393,8 @@ class Organizr
 		// Get config if not supplied
 		if ($current === false) {
 			$current = $this->config;
-		} elseif (is_string($current) && is_file($current)) {
+		}
+		elseif (is_string($current) && is_file($current)) {
 			$current = $this->loadConfig($current);
 		}
 		// Inject Parts
@@ -1381,7 +1415,8 @@ class Organizr
 		$path = ($path) ? $path : $this->userConfigPath;
 		if (!is_file($path)) {
 			return null;
-		} else {
+		}
+		else {
 			return (array)call_user_func(function () use ($path) {
 				return include($path);
 			});
@@ -1393,7 +1428,8 @@ class Organizr
 		$path = $this->defaultConfigPath;
 		if (is_string($path)) {
 			$loadedDefaults = $this->loadConfig($path);
-		} else {
+		}
+		else {
 			$loadedDefaults = $path;
 		}
 		// Include all plugin config files
@@ -1426,7 +1462,8 @@ class Organizr
 		foreach ($defaults as $k => $v) {
 			if (!isset($current[$k])) {
 				$current[$k] = $v;
-			} elseif (is_array($current[$k]) && is_array($v)) {
+			}
+			elseif (is_array($current[$k]) && is_array($v)) {
 				$current[$k] = $this->fillDefaultConfig_recurse($current[$k], $v);
 			}
 		}
@@ -1438,7 +1475,8 @@ class Organizr
 		// Load config or default
 		if (file_exists($this->userConfigPath)) {
 			$config = $this->fillDefaultConfig($this->loadConfig($this->userConfigPath));
-		} else {
+		}
+		else {
 			$config = $this->fillDefaultConfig($this->loadConfig($this->defaultConfigPath));
 		}
 		if ((!is_array($config) || !file_exists($this->userConfigPath)) && $tries < 5) {
@@ -1464,14 +1502,16 @@ class Organizr
 		foreach ($extensions as $check) {
 			if (extension_loaded($check)) {
 				array_push($dependenciesActive, $check);
-			} else {
+			}
+			else {
 				array_push($dependenciesInactive, $check);
 			}
 		}
 		foreach ($functions as $check) {
 			if (function_exists($check)) {
 				array_push($dependenciesActive, $check);
-			} else {
+			}
+			else {
 				array_push($dependenciesInactive, $check);
 			}
 		}
@@ -1486,13 +1526,17 @@ class Organizr
 				header($this->getServerPath() . 'api/v2/organizr/error');
 				exit;
 			}
-		} elseif (count($dependenciesInactive) > 0) {
+		}
+		elseif (count($dependenciesInactive) > 0) {
 			$status['action'] = 'dependencies';
-		} elseif (!$status['writable']) {
+		}
+		elseif (!$status['writable']) {
 			$status['action'] = 'permission';
-		} elseif (!$status['userConfigPathExists']) {
+		}
+		elseif (!$status['userConfigPathExists']) {
 			$status['action'] = 'wizard';
-		} else {
+		}
+		else {
 			$status['action'] = 'launch';
 			if ($action) {
 				echo '<script type="text/javascript"> window.location.href="' . $this->getServerPath() . 'api/v2/organizr/error/409' . '";</script>';
@@ -1512,19 +1556,21 @@ class Organizr
 		foreach ($extensions as $check) {
 			if (extension_loaded($check)) {
 				array_push($dependenciesActive, $check);
-			} else {
+			}
+			else {
 				array_push($dependenciesInactive, $check);
 			}
 		}
 		foreach ($functions as $check) {
 			if (function_exists($check)) {
 				array_push($dependenciesActive, $check);
-			} else {
+			}
+			else {
 				array_push($dependenciesInactive, $check);
 			}
 		}
 		if (!file_exists($this->userConfigPath)) {
-			$status['status'] = 'wizard';//wizard - ok for test
+			$status['status'] = 'wizard'; //wizard - ok for test
 		}
 		if (count($dependenciesInactive) > 0 || !is_writable(dirname(__DIR__, 2)) || !(version_compare(PHP_VERSION, $this->minimumPHP) >= 0)) {
 			$status['status'] = 'dependencies';
@@ -1560,7 +1606,7 @@ class Organizr
 			'image' => 'plugins/images/groups/guest.png'
 		);
 		$response = [
-			array(
+				array(
 				'function' => 'fetch',
 				'query' => 'SELECT * FROM groups WHERE `group_id` = 999'
 			),
@@ -1572,13 +1618,14 @@ class Organizr
 	{
 		if ($this->config['driver'] == 'sqlite3') {
 			$response = [
-				array(
+					array(
 					'function' => 'fetchAll',
 					'query' => 'SELECT name, sql FROM sqlite_master WHERE type=\'table\' ORDER BY name'
 				),
 			];
 			return $this->hasDB() ? $this->processQueries($response) : 'Database not setup yet';
-		} else {
+		}
+		else {
 			return false;
 		}
 	}
@@ -1630,7 +1677,7 @@ class Organizr
 	{
 		$select = $includeAllFields ? '*' : 'token, ip, id, expires, created';
 		$response = [
-			array(
+				array(
 				'function' => 'fetchAll',
 				'query' => array(
 					'SELECT ' . $select . ' FROM `tokens` WHERE user_id = ? AND expires > ?',
@@ -1645,7 +1692,7 @@ class Organizr
 	public function getUserById($id)
 	{
 		$response = [
-			array(
+				array(
 				'function' => 'fetch',
 				'query' => array(
 					'SELECT * FROM users WHERE id = ?',
@@ -1659,7 +1706,7 @@ class Organizr
 	public function getUserByEmail($email)
 	{
 		$response = [
-			array(
+				array(
 				'function' => 'fetch',
 				'query' => array(
 					'SELECT * FROM users WHERE email = ? COLLATE NOCASE',
@@ -1700,11 +1747,12 @@ class Organizr
 					$this->setResponse(403, 'Token was not in approved list');
 				}
 				return false;
-			} else {
+			}
+			else {
 				// Check if user is on same browser as token
-				if ($allTokens[$tokenKey]['browser'] !== $_SERVER ['HTTP_USER_AGENT']) {
+				if ($allTokens[$tokenKey]['browser'] !== $_SERVER['HTTP_USER_AGENT']) {
 					if ($this->config['matchUserAgents']) {
-						$this->setLoggerChannel('Authentication')->warning('Mismatch of useragent', ['token' => $allTokens[$tokenKey]['browser'], 'browser' => $_SERVER ['HTTP_USER_AGENT']]);
+						$this->setLoggerChannel('Authentication')->warning('Mismatch of useragent', ['token' => $allTokens[$tokenKey]['browser'], 'browser' => $_SERVER['HTTP_USER_AGENT']]);
 						$this->invalidToken($token);
 						return false;
 					}
@@ -1736,7 +1784,8 @@ class Organizr
 					'authService' => (isset($user['auth_service'])) ? explode('::', $user['auth_service'])[0] : 'internal'
 				);
 			}
-		} else {
+		}
+		else {
 			if ($api) {
 				$this->setResponse(403, 'Token was invalid');
 			}
@@ -1781,7 +1830,7 @@ class Organizr
 	public function defaultUserGroup()
 	{
 		$response = [
-			array(
+				array(
 				'function' => 'fetch',
 				'query' => 'SELECT * FROM groups WHERE `default` = 1'
 			)
@@ -1792,17 +1841,17 @@ class Organizr
 	public function getAllTabs()
 	{
 		$response = [
-			array(
+				array(
 				'function' => 'fetchAll',
 				'query' => 'SELECT * FROM tabs ORDER BY `order` ASC',
 				'key' => 'tabs'
 			),
-			array(
+				array(
 				'function' => 'fetchAll',
 				'query' => 'SELECT * FROM categories ORDER BY `order` ASC',
 				'key' => 'categories'
 			),
-			array(
+				array(
 				'function' => 'fetchAll',
 				'query' => 'SELECT * FROM groups ORDER BY `group_id` ASC',
 				'key' => 'groups'
@@ -1837,11 +1886,11 @@ class Organizr
 	public function getUsers()
 	{
 		$response = [
-			array(
+				array(
 				'function' => 'fetchAll',
 				'query' => 'SELECT * FROM users'
 			),
-			array(
+				array(
 				'function' => 'fetchAll',
 				'query' => 'SELECT * FROM groups ORDER BY group_id ASC'
 			),
@@ -1853,7 +1902,7 @@ class Organizr
 	{
 		if ($id) {
 			$response = [
-				array(
+					array(
 					'function' => 'fetch',
 					'query' => array(
 						'SELECT * FROM users WHERE `id` != ? AND (username = ? COLLATE NOCASE or email = ? COLLATE NOCASE)',
@@ -1863,9 +1912,10 @@ class Organizr
 					)
 				),
 			];
-		} else {
+		}
+		else {
 			$response = [
-				array(
+					array(
 					'function' => 'fetch',
 					'query' => array(
 						'SELECT * FROM users WHERE username = ? COLLATE NOCASE or email = ? COLLATE NOCASE',
@@ -1907,7 +1957,8 @@ class Organizr
 		$pageFunction = 'get_page_' . $this->cleanPageName($page);
 		if (function_exists($pageFunction)) {
 			return $pageFunction($this);
-		} else {
+		}
+		else {
 			$this->setAPIResponse('error', 'Page not setup', 409);
 			return null;
 		}
@@ -1923,7 +1974,8 @@ class Organizr
 		if (strlen($requesterToken) == 20 && $requesterToken == $apiKey) {
 			//DO API CHECK
 			return 0;
-		} elseif (isset($this->user)) {
+		}
+		elseif (isset($this->user)) {
 			return $this->user['groupID'];
 		}
 		// All else fails?  return guest id
@@ -1934,7 +1986,8 @@ class Organizr
 	{
 		if ($this->getUserLevel() <= $accessLevelNeeded && $this->getUserLevel() !== null) {
 			return true;
-		} else {
+		}
+		else {
 			if ($api) {
 				$this->setAPIResponse('error', 'Not Authorized', 401);
 			}
@@ -1946,7 +1999,8 @@ class Organizr
 	{
 		if (strlen($string) <= $length) {
 			return true;
-		} else {
+		}
+		else {
 			if ($api) {
 				$this->setResponse(409, 'String is over limit of: ' . $length);
 			}
@@ -2013,7 +2067,8 @@ class Organizr
 				if (stripos($v['text'], $term) !== false) {
 					$goodIcons['results'][] = $v;
 				}
-			} else {
+			}
+			else {
 				$goodIcons['results'][] = $v;
 			}
 		}
@@ -2038,11 +2093,13 @@ class Organizr
 				$this->logger->info('Image Manager Function -  Deleted Image [' . pathinfo($image, PATHINFO_BASENAME) . ']');
 				$this->setAPIResponse(null, pathinfo($image, PATHINFO_BASENAME) . ' has been deleted', null);
 				return (unlink(dirname(__DIR__, 2) . DIRECTORY_SEPARATOR . $removeImage));
-			} else {
+			}
+			else {
 				$this->setAPIResponse('error', $removeImage . ' does not exist', 404);
 				return false;
 			}
-		} else {
+		}
+		else {
 			$this->setAPIResponse('error', $removeImage . ' is not approved to be deleted', 409);
 			return false;
 		}
@@ -2118,12 +2175,14 @@ class Organizr
 						if ($pingFormatted['port'] !== '') {
 							$ping->setPort($pingFormatted['port']);
 							$latency = $ping->ping('fsockopen');
-						} else {
+						}
+						else {
 							$latency = $ping->ping();
 						}
 						if ($latency || $latency === 0) {
 							$results[$v] = $latency;
-						} else {
+						}
+						else {
 							$results[$v] = false;
 						}
 					}
@@ -2134,12 +2193,14 @@ class Organizr
 					if ($pingFormatted['port'] !== '') {
 						$ping->setPort($pingFormatted['port']);
 						$latency = $ping->ping('fsockopen');
-					} else {
+					}
+					else {
 						$latency = $ping->ping();
 					}
 					if ($latency || $latency === 0) {
 						$results = $latency;
-					} else {
+					}
+					else {
 						$results = null;
 					}
 					break;
@@ -2243,7 +2304,7 @@ class Organizr
 						</ul>
 					</div>
 					']
-				),
+			),
 			],
 			'FavIcon' => [
 				$this->settingsOption('html', null, ['label' => 'Instructions', 'override' => 12, 'html' => '
@@ -2267,7 +2328,7 @@ class Organizr
 						</div>
 					</div>
 					']
-				),
+			),
 				$this->settingsOption('code-editor', 'favIcon', ['label' => 'Fav Icon Code', 'mode' => 'html']),
 			],
 			'Custom CSS' => [
@@ -2339,7 +2400,8 @@ class Organizr
 										$image = 'data/cache/' . $info->getFilename();
 										$i++;
 									}
-								} else {
+								}
+								else {
 									break;
 								}
 							}
@@ -2348,10 +2410,12 @@ class Organizr
 					default:
 						return false;
 				}
-			} catch (Exception $e) {
+			}
+			catch (Exception $e) {
 				return false;
 			}
-		} else {
+		}
+		else {
 			return false;
 		}
 	}
@@ -2487,7 +2551,7 @@ class Organizr
 			],
 			'Certificate' => [
 				$this->settingsOption('html', '', ['override' => 12,
-						'html' => '
+					'html' => '
 					<script>
 						let myDropzone = new Dropzone("#upload-custom-certificate", {
 							url: "api/v2/certificate/custom",
@@ -2527,7 +2591,7 @@ class Organizr
 						</div>
 					</div>
 					']
-				)
+			)
 			],
 		];
 		if ($this->config['driver'] == 'sqlite3') {
@@ -2550,7 +2614,7 @@ class Organizr
 		return [
 			'FYI' => [
 				$this->settingsOption('html', '', ['override' => 12,
-						'html' => '
+					'html' => '
 						<div class="row">
 							<div class="col-lg-12">
 								<div class="panel panel-primary">
@@ -2571,8 +2635,8 @@ class Organizr
 								</div>
 							</div>
 						</div>'
-					]
-				),
+				]
+			),
 			],
 			'Plex' => [
 				$this->settingsOption('token', 'plexToken'),
@@ -2883,15 +2947,18 @@ class Organizr
 			if (is_writable($path)) {
 				$this->setAPIResponse('success', 'Path exists and is writable', 200);
 				return true;
-			} else {
+			}
+			else {
 				$this->setAPIResponse('error', 'Path exists but is not writable', 403);
 				return false;
 			}
-		} else {
+		}
+		else {
 			if (mkdir($path, 0760, true)) {
 				$this->setAPIResponse('success', 'Path is writable - Creating now', 200);
 				return true;
-			} else {
+			}
+			else {
 				$this->setAPIResponse('error', 'Failed making directory - Check permissions', 403);
 				return false;
 			}
@@ -2967,7 +3034,8 @@ class Organizr
 					$this->setAPIResponse('error', '[' . $path . ']  is not writable', 422);
 					return false;
 				}
-			} else {
+			}
+			else {
 				if (!mkdir($path, 0760, true)) {
 					$this->setAPIResponse('error', '[' . $path . ']  is not writable', 422);
 					return false;
@@ -3013,16 +3081,20 @@ class Organizr
 				if ($this->createFirstAdmin($username, $password, $email)) {
 					if ($this->createToken($username, $email, 1)) {
 						return true;
-					} else {
+					}
+					else {
 						$this->setAPIResponse('error', 'error creating token', 500);
 					}
-				} else {
+				}
+				else {
 					$this->setAPIResponse('error', 'error creating admin', 500);
 				}
-			} else {
+			}
+			else {
 				$this->setAPIResponse('error', 'error creating database', 500);
 			}
-		} else {
+		}
+		else {
 			$this->setAPIResponse('error', 'error creating config', 500);
 		}
 		return false;
@@ -3094,13 +3166,15 @@ class Organizr
 						$this->setAPIResponse('error', '[' . $path . ']  is not writable', 422);
 						return false;
 					}
-				} else {
+				}
+				else {
 					if (is_writable(dirname($path, 1))) {
 						if (!mkdir($path, 0760, true)) {
 							$this->setAPIResponse('error', '[' . $path . ']  is not writable', 422);
 							return false;
 						}
-					} else {
+					}
+					else {
 						$this->setAPIResponse('error', '[' . $path . ']  is not writable', 422);
 						return false;
 					}
@@ -3122,11 +3196,13 @@ class Organizr
 			if ($testConnection) {
 				$this->setResponse(200, 'Database connection successful');
 				return true;
-			} else {
+			}
+			else {
 				$this->setResponse(409, 'Database connection unsuccessful');
 				return false;
 			}
-		} catch (Dibi\Exception $e) {
+		}
+		catch (Dibi\Exception $e) {
 			$this->setResponse(500, $e->getMessage());
 			return false;
 		}
@@ -3148,19 +3224,22 @@ class Organizr
 			if ($migration) {
 				try {
 					$this->otherDb = new Connection($config);
-				} catch (Dibi\Exception $e) {
+				}
+				catch (Dibi\Exception $e) {
 					$this->otherDb = null;
 				}
-			} else {
+			}
+			else {
 				try {
 					$this->db = new Connection($config);
-				} catch (Dibi\Exception $e) {
+				}
+				catch (Dibi\Exception $e) {
 					$this->db = null;
 				}
 			}
 			if ($dbName == 'tempMigration') {
 				$response = [
-					array(
+						array(
 						'function' => 'query',
 						'query' => [
 							'DROP DATABASE IF EXISTS tempMigration'
@@ -3170,7 +3249,7 @@ class Organizr
 				$drop = $this->processQueries($response, $migration);
 			}
 			$response = [
-				array(
+					array(
 					'function' => 'query',
 					'query' => ['CREATE DATABASE IF NOT EXISTS %n',
 						$dbName
@@ -3181,14 +3260,17 @@ class Organizr
 			if ($results) {
 				if ($migration) {
 					$this->connectOtherDB();
-				} else {
+				}
+				else {
 					$this->connectDB();
 				}
 				return true;
-			} else {
+			}
+			else {
 				return false;
 			}
-		} elseif ($this->config['driver'] == 'postgre') {
+		}
+		elseif ($this->config['driver'] == 'postgre') {
 			$config = [
 				'driver' => 'postgre',
 				'username' => $this->config['dbUsername'],
@@ -3207,11 +3289,12 @@ class Organizr
 			}
 			try {
 				$this->db = new Connection($config);
-			} catch (Dibi\Exception $e) {
+			}
+			catch (Dibi\Exception $e) {
 				$this->db = null;
 			}
 			$response = [
-				array(
+					array(
 					'function' => 'query',
 					'query' => ['CREATE DATABASE %n',
 						$dbName
@@ -3222,10 +3305,12 @@ class Organizr
 			if ($results) {
 				$this->connectDB();
 				return true;
-			} else {
+			}
+			else {
 				return false;
 			}
-		} else {
+		}
+		else {
 			return true;
 		}
 	}
@@ -3247,7 +3332,7 @@ class Organizr
 	public function defaultTables()
 	{
 		return [
-			array(
+				array(
 				'function' => 'query',
 				'query' => '
 					CREATE TABLE `users` (
@@ -3265,7 +3350,7 @@ class Organizr
 					);
 				'
 			),
-			array(
+				array(
 				'function' => 'query',
 				'query' => 'CREATE TABLE `chatroom` (
 					`id`	INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE,
@@ -3277,7 +3362,7 @@ class Organizr
 					`message` TEXT
 				);'
 			),
-			array(
+				array(
 				'function' => 'query',
 				'query' => 'CREATE TABLE `tokens` (
 					`id`	INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE,
@@ -3289,7 +3374,7 @@ class Organizr
 					`expires` DATETIME
 				);'
 			),
-			array(
+				array(
 				'function' => 'query',
 				'query' => 'CREATE TABLE `groups` (
 					`id`	INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE,
@@ -3299,7 +3384,7 @@ class Organizr
 					`default` INTEGER
 				);'
 			),
-			array(
+				array(
 				'function' => 'query',
 				'query' => 'CREATE TABLE `categories` (
 					`id`	INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE,
@@ -3310,7 +3395,7 @@ class Organizr
 					`default` INTEGER
 				);'
 			),
-			array(
+				array(
 				'function' => 'query',
 				'query' => 'CREATE TABLE `tabs` (
 					`id`	INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE,
@@ -3334,7 +3419,7 @@ class Organizr
 					`preload`	INTEGER
 				);'
 			),
-			array(
+				array(
 				'function' => 'query',
 				'query' => 'CREATE TABLE `options` (
 					`id`	INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE,
@@ -3342,7 +3427,7 @@ class Organizr
 					`value`	TEXT
 				);'
 			),
-			array(
+				array(
 				'function' => 'query',
 				'query' => 'CREATE TABLE `invites` (
 					`id`	INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE,
@@ -3358,7 +3443,7 @@ class Organizr
 					`invitedby` TEXT
 				);'
 			),
-			array(
+				array(
 				'function' => 'query',
 				'query' => 'CREATE TABLE `BOOKMARK-categories` (
 					`id`	INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE,
@@ -3368,7 +3453,7 @@ class Organizr
 					`default` INTEGER
 				);'
 			),
-			array(
+				array(
 				'function' => 'query',
 				'query' => 'CREATE TABLE `BOOKMARK-tabs` (
 					`id`	INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE,
@@ -3473,70 +3558,70 @@ class Organizr
 			'default' => 1
 		];
 		$response = [
-			array(
+				array(
 				'function' => 'query',
 				'query' => array(
 					'INSERT INTO [users]',
 					$userInfo
 				)
 			),
-			array(
+				array(
 				'function' => 'query',
 				'query' => array(
 					'INSERT INTO [groups]',
 					$groupInfo0
 				)
 			),
-			array(
+				array(
 				'function' => 'query',
 				'query' => array(
 					'INSERT INTO [groups]',
 					$groupInfo1
 				)
 			),
-			array(
+				array(
 				'function' => 'query',
 				'query' => array(
 					'INSERT INTO [groups]',
 					$groupInfo2
 				)
 			),
-			array(
+				array(
 				'function' => 'query',
 				'query' => array(
 					'INSERT INTO [groups]',
 					$groupInfo3
 				)
 			),
-			array(
+				array(
 				'function' => 'query',
 				'query' => array(
 					'INSERT INTO [groups]',
 					$groupInfo4
 				)
 			),
-			array(
+				array(
 				'function' => 'query',
 				'query' => array(
 					'INSERT INTO [groups]',
 					$groupInfoGuest
 				)
 			),
-			array(
+				array(
 				'function' => 'query',
 				'query' => array(
 					'INSERT INTO [tabs]',
 					$settingsInfo
 				)
 			),
-			array(
+				array(
 				'function' => 'query',
 				'query' => array(
 					'INSERT INTO [tabs]',
 					$homepageInfo
 				)
 			),
-			array(
+				array(
 				'function' => 'query',
 				'query' => array(
 					'INSERT INTO [categories]',
@@ -3550,7 +3635,7 @@ class Organizr
 	public function getUserByUsernameAndEmail($username, $email)
 	{
 		$response = [
-			array(
+				array(
 				'function' => 'fetch',
 				'query' => array(
 					'SELECT * FROM users WHERE username = ? COLLATE NOCASE OR email = ? COLLATE NOCASE',
@@ -3586,12 +3671,12 @@ class Organizr
 			// Configures the expiration time of the token (exp claim)
 			->expiresAt($now->modify('+' . $days . ' days'))
 			// Configures a new claim, called "uid"
-			->withClaim('name', $result['username'])// Configures a new claim, called "name"
-			->withClaim('group', $result['group'])// Configures a new claim, called "group"
-			->withClaim('groupID', $result['group_id'])// Configures a new claim, called "groupID"
-			->withClaim('email', $result['email'])// Configures a new claim, called "email"
-			->withClaim('image', $result['image'])// Configures a new claim, called "image"
-			->withClaim('userID', $result['id'])// Configures a new claim, called "image"
+			->withClaim('name', $result['username']) // Configures a new claim, called "name"
+			->withClaim('group', $result['group']) // Configures a new claim, called "group"
+			->withClaim('groupID', $result['group_id']) // Configures a new claim, called "groupID"
+			->withClaim('email', $result['email']) // Configures a new claim, called "email"
+			->withClaim('image', $result['image']) // Configures a new claim, called "image"
+			->withClaim('userID', $result['id']) // Configures a new claim, called "image"
 			// Configures a new header, called "foo"
 			//->withHeader('foo', 'bar')
 			// Builds a new token
@@ -3604,7 +3689,7 @@ class Organizr
 			'token' => $token->toString(),
 			'user_id' => $result['id'],
 			'created' => gmdate('Y-m-d H:i:s'),
-			'browser' => $_SERVER ['HTTP_USER_AGENT'] ?? null,
+			'browser' => $_SERVER['HTTP_USER_AGENT'] ?? null,
 			'ip' => $this->userIP(),
 			'expires' => gmdate('Y-m-d H:i:s', time() + (86400 * $days))
 		];
@@ -3631,8 +3716,8 @@ class Organizr
 			$this->logger->debug('Token has been created');
 			$browserCount = array_column($query['tokens'], 'browser');
 			$browserCount = array_count_values($browserCount);
-			if (isset($browserCount[$_SERVER ['HTTP_USER_AGENT']])) {
-				if ($browserCount[$_SERVER ['HTTP_USER_AGENT']] <= 1) {
+			if (isset($browserCount[$_SERVER['HTTP_USER_AGENT']])) {
+				if ($browserCount[$_SERVER['HTTP_USER_AGENT']] <= 1) {
 					if ($this->config['PHPMAILER-enabled']) {
 						$PhpMailer = new PhpMailer();
 						$emailTemplate = array(
@@ -3644,7 +3729,7 @@ class Organizr
 								If this wasn\'t you, please change your password and revoke all tokens.<br /><br />
 								<b>Details:</b><br/ >
 								IP: ' . $this->userIP() . '<br />
-								Browser: ' . $_SERVER ['HTTP_USER_AGENT'] . '<br />
+								Browser: ' . $_SERVER['HTTP_USER_AGENT'] . '<br />
 								',
 							'subject' => 'We noticed a login attempt to your account on a new device.',
 							'user' => $result['username'],
@@ -3661,17 +3746,21 @@ class Organizr
 						$response = $PhpMailer->_phpMailerPluginSendEmail($sendEmail);
 						if ($response == true) {
 							$this->logger->debug('Sent new device email');
-						} else {
+						}
+						else {
 							$this->logger->debug('Could not send new device email');
 						}
-					} else {
+					}
+					else {
 						$this->logger->debug('Email not setup - cannot send new device email');
 					}
 				}
-			} else {
+			}
+			else {
 				$this->logger->debug('Could not find token in database');
 			}
-		} else {
+		}
+		else {
 			$this->logger->warning('Token creation error');
 		}
 		$this->logger->debug('Token creation function has finished');
@@ -3682,14 +3771,14 @@ class Organizr
 	{
 		// Bypass Check
 		$bypassLogin = $this->config['bypassLoginForLocal'] && $this->config['localLoginUserId'] && $this->isLocal() == true;
-		if(gettype($array) == 'array'){
-			if(key_exists('bypass', $array)){
+		if (gettype($array) == 'array') {
+			if (key_exists('bypass', $array)) {
 				$bypassLogin = false;
 			}
-			if(key_exists('username', $array)){
+			if (key_exists('username', $array)) {
 				$bypassLogin = false;
 			}
-			if(key_exists('oAuth', $array)){
+			if (key_exists('oAuth', $array)) {
 				$bypassLogin = false;
 			}
 		}
@@ -3736,7 +3825,8 @@ class Organizr
 				if ($authProxy) {
 					$this->logger->info('User has been verified using Auth Proxy');
 					$bypassTFA = true;
-				} else {
+				}
+				else {
 					$this->logger->warning('User has failed verification using Auth Proxy');
 				}
 			}
@@ -3768,11 +3858,13 @@ class Organizr
 					}
 			}
 			$authSuccess = ($authProxy) ? $addEmailToAuthProxy : $authSuccess;
-		} elseif ($bypassLogin){
+		}
+		elseif ($bypassLogin) {
 			$id = $this->config['localLoginUserId'];
 			$result = $this->getUserById($id);
 			$authSuccess = true;
-		} else {
+		}
+		else {
 			// Has oAuth Token!
 			switch ($oAuthType) {
 				case 'plex':
@@ -3790,10 +3882,12 @@ class Organizr
 							$this->logger->debug('User\'s Plex Token has been verified');
 							$this->coookie('set', 'oAuth', 'true', $this->config['rememberMeDays']);
 							$authSuccess = ((!empty($this->config['plexAdmin']) && strtolower($this->config['plexAdmin']) == strtolower($tokenInfo['user']['username'])) || (!empty($this->config['plexAdmin']) && strtolower($this->config['plexAdmin']) == strtolower($tokenInfo['user']['email'])) || $this->checkPlexUser($tokenInfo['user']['username'])) ? $authSuccess : false;
-						} else {
+						}
+						else {
 							$this->logger->warning('User\'s Plex Token has failed verification');
 						}
-					} else {
+					}
+					else {
 						$this->logger->debug('Plex oAuth is not setup');
 						$this->setAPIResponse('error', 'Plex oAuth is not setup', 422);
 						return false;
@@ -3859,12 +3953,14 @@ class Organizr
 							$this->logger->debug('Sending 2FA response to login UI');
 							$this->setAPIResponse('warning', '2FA Code Needed', 422);
 							return false;
-						} else {
+						}
+						else {
 							if (!$this->verify2FA($TFA[1], $tfaCode, $TFA[0])) {
 								$this->logger->warning('Incorrect 2FA');
 								$this->setAPIResponse('error', 'Wrong 2FA', 422);
 								return false;
-							} else {
+							}
+							else {
 								$this->logger->info('2FA verification passed');
 							}
 						}
@@ -3878,17 +3974,20 @@ class Organizr
 					$ssoUserObject = ($token !== '') ? $authSuccess : $result;
 					$this->ssoCheck($ssoUserObject, $password, $token); //need to work on this
 					return ($output) ? array('name' => $this->cookieName, 'token' => (string)$createToken) : true;
-				} else {
+				}
+				else {
 					$this->setAPIResponse('error', 'Token creation error', 500);
 					return false;
 				}
-			} else {
+			}
+			else {
 				// Create User
 				$this->setLoggerChannel('Authentication', (is_array($authSuccess) && isset($authSuccess['username']) ? $authSuccess['username'] : $username));
 				$this->logger->debug('Starting Registration function');
 				return $this->authRegister((is_array($authSuccess) && isset($authSuccess['username']) ? $authSuccess['username'] : $username), $password, (is_array($authSuccess) && isset($authSuccess['email']) ? $authSuccess['email'] : ''), $token);
 			}
-		} else {
+		}
+		else {
 			// authentication failed
 			$this->setLoggerChannel('Authentication', $username);
 			$this->logger->warning('Wrong Password');
@@ -3897,7 +3996,8 @@ class Organizr
 				$this->coookieSeconds('set', 'lockout', $this->config['loginLockout'], $this->config['loginLockout']);
 				$this->setAPIResponse('error', 'User is locked out', 403);
 				return false;
-			} else {
+			}
+			else {
 				$this->logger->debug('User has not exceeded maximum login attempts');
 				$this->setAPIResponse('error', 'User credentials incorrect', 401);
 				return false;
@@ -3961,7 +4061,8 @@ class Organizr
 				$this->setAPIResponse('success', 'User password has been reset and email has been sent', 200);
 			}
 			return true;
-		} else {
+		}
+		else {
 			$this->setAPIResponse('error', 'User not found', 404);
 			return false;
 		}
@@ -3999,10 +4100,12 @@ class Organizr
 					$this->logger->info('User has logged in');
 					return true;
 				}
-			} else {
+			}
+			else {
 				return false;
 			}
-		} else {
+		}
+		else {
 			$this->logger->warning('Wrong Password');
 			$this->setAPIResponse('error', 'Registration Password was incorrect', 401);
 			return false;
@@ -4043,10 +4146,12 @@ class Organizr
 			if ($this->createToken($username, $email, $this->config['rememberMeDays'])) {
 				$this->logger->info('User has logged in');
 				return true;
-			} else {
+			}
+			else {
 				return false;
 			}
-		} else {
+		}
+		else {
 			$this->logger->warning('Registration error occurred');
 			return false;
 		}
@@ -4056,7 +4161,7 @@ class Organizr
 	{
 		if ($token) {
 			$response = [
-				array(
+					array(
 					'function' => 'query',
 					'query' => array(
 						'DELETE FROM tokens WHERE token = ?',
@@ -4064,9 +4169,10 @@ class Organizr
 					)
 				),
 			];
-		} else {
+		}
+		else {
 			$response = [
-				array(
+					array(
 					'function' => 'query',
 					'query' => array(
 						'DELETE FROM tokens WHERE user_id = ?',
@@ -4085,7 +4191,7 @@ class Organizr
 			return false;
 		}
 		$response = [
-			array(
+				array(
 				'function' => 'query',
 				'query' => array(
 					'DELETE FROM tokens WHERE token = ?',
@@ -4104,7 +4210,7 @@ class Organizr
 			return false;
 		}
 		$response = [
-			array(
+				array(
 				'function' => 'query',
 				'query' => array(
 					'DELETE FROM tokens WHERE id = ? AND user_id = ?',
@@ -4124,7 +4230,7 @@ class Organizr
 			return false;
 		}
 		$response = [
-			array(
+				array(
 				'function' => 'query',
 				'query' => array(
 					'DELETE FROM tokens WHERE user_id = ?',
@@ -4140,7 +4246,7 @@ class Organizr
 	public function updateUserPassword($password, $id)
 	{
 		$response = [
-			array(
+				array(
 				'function' => 'query',
 				'query' => array(
 					'UPDATE users SET',
@@ -4156,7 +4262,7 @@ class Organizr
 	public function updateUserPlexToken($token, $id)
 	{
 		$response = [
-			array(
+				array(
 				'function' => 'query',
 				'query' => array(
 					'UPDATE users SET',
@@ -4176,7 +4282,7 @@ class Organizr
 		}
 		$sort = ($this->config['unsortedTabs'] == 'top') ? 'DESC' : 'ASC';
 		$response = [
-			array(
+				array(
 				'function' => 'fetchAll',
 				'query' => array(
 					'SELECT * FROM tabs WHERE `group_id` >= ? AND `group_id_max` <= ? AND `enabled` = 1 ORDER BY `order` ' . $sort,
@@ -4185,14 +4291,14 @@ class Organizr
 				),
 				'key' => 'tabs'
 			),
-			array(
+				array(
 				'function' => 'fetchAll',
 				'query' => array(
 					'SELECT * FROM tabs WHERE `add_to_admin` = 1 AND `enabled` = 1 ORDER BY `order` ' . $sort
 				),
 				'key' => 'tabs-admin'
 			),
-			array(
+				array(
 				'function' => 'fetchAll',
 				'query' => array(
 					'SELECT * FROM categories ORDER BY `order` ASC',
@@ -4218,14 +4324,16 @@ class Organizr
 				usort($all['tabs'], function ($a, $b) {
 					if ($this->config['unsortedTabs'] == 'top') {
 						return $b['order'] <=> $a['order'];
-					} else {
+					}
+					else {
 						return $a['order'] <=> $b['order'];
 					}
 				});
 			}
 			$newArray = NULL;
 			$ids = NULL;
-		} else {
+		}
+		else {
 			$all['tabs'] = $queries['tabs'];
 		}
 		foreach ($all['tabs'] as $k => $v) {
@@ -4253,7 +4361,7 @@ class Organizr
 
 	public function checkTabURL($url = null)
 	{
-		return $url !== '' && $url !== null & $url !== 'null' ? $this->qualifyURL($url, false, true) : '';
+		return $url !== '' && $url !== null& $url !== 'null' ? $this->qualifyURL($url, false, true) : '';
 	}
 
 	public function refreshList()
@@ -4292,10 +4400,12 @@ class Organizr
 	{
 		if ($this->config['plexAdmin'] == '') {
 			return false;
-		} else {
+		}
+		else {
 			if ((strpos($this->config['plexAdmin'], '@') !== false)) {
 				return 'email';
-			} else {
+			}
+			else {
 				return 'username';
 			}
 		}
@@ -4430,7 +4540,7 @@ class Organizr
 				'maxGroup' => $this->config['lockoutMaxAuth']
 			],
 			'user' => [
-				'agent' => isset($_SERVER ['HTTP_USER_AGENT']) ? $_SERVER ['HTTP_USER_AGENT'] : null,
+				'agent' => isset($_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT'] : null,
 				'oAuthLogin' => isset($_COOKIE['oAuth']),
 				'local' => $this->isLocal(),
 				'ip' => $this->userIP(),
@@ -4489,7 +4599,8 @@ class Organizr
 				return false;
 			}
 			return true;
-		} else {
+		}
+		else {
 			return false;
 		}
 	}
@@ -4500,9 +4611,11 @@ class Organizr
 		$apiKey = ($this->config['organizrAPI']) ?? null;
 		if (isset($data['formKey'])) {
 			$formKey = $data['formKey'];
-		} elseif (isset($this->getallheadersi()['formkey'])) {
+		}
+		elseif (isset($this->getallheadersi()['formkey'])) {
 			$formKey = $this->getallheadersi()['formkey'];
-		} else {
+		}
+		else {
 			$formKey = false;
 		}
 		// Check token or API key
@@ -4510,15 +4623,18 @@ class Organizr
 		if (strlen($requesterToken) == 20 && $requesterToken == $apiKey) {
 			//DO API CHECK
 			return true;
-		} elseif ($method == 'POST') {
+		}
+		elseif ($method == 'POST') {
 			if ($this->checkFormKey($formKey)) {
 				return true;
-			} else {
+			}
+			else {
 				$this->setLoggerChannel('Authentication');
 				$this->logger->warning('Unable to authenticate Form Key: ' . $formKey);
 				return false;
 			}
-		} else {
+		}
+		else {
 			return true;
 		}
 		return false;
@@ -4537,14 +4653,16 @@ class Organizr
 			//new way
 			if (method_exists($this, $key)) {
 				$homepageBuilt .= $this->$key();
-			} elseif (strpos($key, 'homepageOrdercustomhtml') !== false) {
+			}
+			elseif (strpos($key, 'homepageOrdercustomhtml') !== false) {
 				$iteration = substr($key, -2);
 				$homepageBuilt .= $this->homepageOrdercustomhtml($iteration);
-			} else {
+			}
+			else {
 				$homepageBuilt .= '<div id="' . $key . '"></div>';
 			}
-			//old way
-			//$homepageBuilt .= $this->buildHomepageItem($key);
+		//old way
+		//$homepageBuilt .= $this->buildHomepageItem($key);
 		}
 		return $homepageBuilt;
 	}
@@ -4636,28 +4754,28 @@ class Organizr
 						$class .= ' faded';
 					}
 					break;
-			case 'homepageOrderembynowplaying':
-			case 'homepageOrderembyrecent':
-				$class = 'bg-emby';
-				$image = 'plugins/images/tabs/emby.png';
-				if (!$this->config['homepageEmbyEnabled']) {
-					$class .= ' faded';
-				}
-				break;
-			case 'homepageOrderEmbyLiveTVTracker':
-				$class = 'bg-emby';
-				$image = 'plugins/images/homepage/embyLiveTVTracker.png';
-				if (!$this->config['homepageEmbyLiveTVTrackerEnabled']) {
-					$class .= ' faded';
-				}
-				break;
-			case 'homepageOrderJellyStat':
-				$class = 'bg-info';
-				$image = 'plugins/images/homepage/jellystat.png';
-				if (!$this->config['homepageJellyStatEnabled']) {
-					$class .= ' faded';
-				}
-				break;
+				case 'homepageOrderembynowplaying':
+				case 'homepageOrderembyrecent':
+					$class = 'bg-emby';
+					$image = 'plugins/images/tabs/emby.png';
+					if (!$this->config['homepageEmbyEnabled']) {
+						$class .= ' faded';
+					}
+					break;
+				case 'homepageOrderEmbyLiveTVTracker':
+					$class = 'bg-emby';
+					$image = 'plugins/images/homepage/embyLiveTVTracker.png';
+					if (!$this->config['homepageEmbyLiveTVTrackerEnabled']) {
+						$class .= ' faded';
+					}
+					break;
+				case 'homepageOrderJellyStat':
+					$class = 'bg-info';
+					$image = 'plugins/images/homepage/jellystat.png';
+					if (!$this->config['homepageJellyStatEnabled']) {
+						$class .= ' faded';
+					}
+					break;
 				case 'homepageOrderjellyfinnowplaying':
 				case 'homepageOrderjellyfinrecent':
 					$class = 'bg-jellyfin';
@@ -4820,6 +4938,13 @@ class Organizr
 						$class .= ' faded';
 					}
 					break;
+				case 'homepageOrderKomga':
+					$class = 'bg-inverse';
+					$image = 'plugins/images/komga.svg';
+					if (!$this->config['homepageKomgaEnabled']) {
+						$class .= ' faded';
+					}
+					break;
 				default:
 					$class = 'blue-bg';
 					$image = '';
@@ -4899,7 +5024,7 @@ class Organizr
 	{
 		if ($id) {
 			$response = [
-				array(
+					array(
 					'function' => 'fetchAll',
 					'query' => array(
 						'SELECT * FROM tabs WHERE `name` LIKE ? AND `id` != ?',
@@ -4908,9 +5033,10 @@ class Organizr
 					)
 				),
 			];
-		} else {
+		}
+		else {
 			$response = [
-				array(
+					array(
 					'function' => 'fetchAll',
 					'query' => array(
 						'SELECT * FROM tabs WHERE `name` LIKE ?',
@@ -4926,7 +5052,7 @@ class Organizr
 	{
 		if ($id) {
 			$response = [
-				array(
+					array(
 					'function' => 'fetchAll',
 					'query' => array(
 						'SELECT * FROM categories WHERE `category` LIKE ? AND `id` != ?',
@@ -4935,9 +5061,10 @@ class Organizr
 					)
 				),
 			];
-		} else {
+		}
+		else {
 			$response = [
-				array(
+					array(
 					'function' => 'fetchAll',
 					'query' => array(
 						'SELECT * FROM categories WHERE `category` LIKE ?',
@@ -4953,7 +5080,7 @@ class Organizr
 	{
 		if ($id) {
 			$response = [
-				array(
+					array(
 					'function' => 'fetchAll',
 					'query' => array(
 						'SELECT * FROM groups WHERE `group` LIKE ? AND `id` != ?',
@@ -4962,9 +5089,10 @@ class Organizr
 					)
 				),
 			];
-		} else {
+		}
+		else {
 			$response = [
-				array(
+					array(
 					'function' => 'fetchAll',
 					'query' => array(
 						'SELECT * FROM groups WHERE `group` LIKE ?',
@@ -4980,11 +5108,12 @@ class Organizr
 	{
 		if ($this->config['driver'] == 'sqlite3') {
 			$query = 'PRAGMA table_info(?)';
-		} else {
+		}
+		else {
 			$query = 'DESCRIBE %n';
 		}
 		$response = [
-			array(
+				array(
 				'function' => 'fetchAll',
 				'query' => [
 					$query, $table
@@ -4998,7 +5127,8 @@ class Organizr
 	{
 		if ($this->config['driver'] == 'sqlite3') {
 			$name = 'name';
-		} else {
+		}
+		else {
 			$name = 'Field';
 		}
 		$columns = $this->getTableColumns($table);
@@ -5008,7 +5138,8 @@ class Organizr
 				$columnsFormatted[$v[$name]] = $v;
 			}
 			return $columnsFormatted;
-		} else {
+		}
+		else {
 			return false;
 		}
 	}
@@ -5016,7 +5147,7 @@ class Organizr
 	public function getTabById($id)
 	{
 		$response = [
-			array(
+				array(
 				'function' => 'fetch',
 				'query' => array(
 					'SELECT * FROM tabs WHERE `id` = ?',
@@ -5030,7 +5161,7 @@ class Organizr
 	public function getTabGroupByTabName($tab)
 	{
 		$response = [
-			array(
+				array(
 				'function' => 'fetch',
 				'query' => array(
 					'SELECT group_id FROM tabs WHERE name LIKE %~like~',
@@ -5045,7 +5176,7 @@ class Organizr
 	public function getCategoryById($id)
 	{
 		$response = [
-			array(
+				array(
 				'function' => 'fetch',
 				'query' => array(
 					'SELECT * FROM categories WHERE `id` = ?',
@@ -5059,7 +5190,7 @@ class Organizr
 	public function getGroupUserCountById($id)
 	{
 		$response = [
-			array(
+				array(
 				'function' => 'fetchSingle',
 				'query' => array(
 					'SELECT count(username) AS count FROM groups INNER JOIN users ON users.group_id = groups.group_id AND groups.id = ?',
@@ -5073,7 +5204,7 @@ class Organizr
 	public function getGroupById($id)
 	{
 		$response = [
-			array(
+				array(
 				'function' => 'fetch',
 				'query' => array(
 					'SELECT * FROM groups WHERE `id` = ?',
@@ -5087,7 +5218,7 @@ class Organizr
 	public function getGroupByGroupId($id)
 	{
 		$response = [
-			array(
+				array(
 				'function' => 'fetch',
 				'query' => array(
 					'SELECT * FROM groups WHERE `group_id` = ?',
@@ -5101,7 +5232,7 @@ class Organizr
 	public function getDefaultGroup()
 	{
 		$response = [
-			array(
+				array(
 				'function' => 'fetch',
 				'query' => array(
 					'SELECT * FROM groups WHERE `default` = 1'
@@ -5114,7 +5245,7 @@ class Organizr
 	public function getDefaultGroupId()
 	{
 		$response = [
-			array(
+				array(
 				'function' => 'fetchSingle',
 				'query' => array(
 					'SELECT `group_id` FROM groups WHERE `default` = 1'
@@ -5127,7 +5258,7 @@ class Organizr
 	public function getDefaultCategory()
 	{
 		$response = [
-			array(
+				array(
 				'function' => 'fetch',
 				'query' => array(
 					'SELECT * FROM categories WHERE `default` = 1'
@@ -5140,7 +5271,7 @@ class Organizr
 	public function getDefaultCategoryId()
 	{
 		$response = [
-			array(
+				array(
 				'function' => 'fetchSingle',
 				'query' => array(
 					'SELECT `category_id` FROM categories WHERE `default` = 1'
@@ -5153,7 +5284,7 @@ class Organizr
 	public function getNextTabOrder()
 	{
 		$response = [
-			array(
+				array(
 				'function' => 'fetchSingle',
 				'query' => array(
 					'SELECT `order` from tabs ORDER BY `order` DESC'
@@ -5166,7 +5297,7 @@ class Organizr
 	public function getNextCategoryOrder()
 	{
 		$response = [
-			array(
+				array(
 				'function' => 'fetchSingle',
 				'query' => array(
 					'SELECT `order` from categories ORDER BY `order` DESC'
@@ -5179,7 +5310,7 @@ class Organizr
 	public function getNextGroupOrder()
 	{
 		$response = [
-			array(
+				array(
 				'function' => 'fetchSingle',
 				'query' => array(
 					'SELECT `group_id` from groups WHERE `group_id` != "999" ORDER BY `group_id` DESC'
@@ -5188,11 +5319,11 @@ class Organizr
 		];
 		return $this->processQueries($response);
 	}
-	
+
 	public function getNextCategoryId()
 	{
 		$response = [
-			array(
+				array(
 				'function' => 'fetchSingle',
 				'query' => array(
 					'SELECT `category_id` from categories ORDER BY `category_id` DESC'
@@ -5205,7 +5336,7 @@ class Organizr
 	public function clearTabDefault()
 	{
 		$response = [
-			array(
+				array(
 				'function' => 'query',
 				'query' => array(
 					'UPDATE tabs SET `default` = 0'
@@ -5218,7 +5349,7 @@ class Organizr
 	public function clearCategoryDefault()
 	{
 		$response = [
-			array(
+				array(
 				'function' => 'query',
 				'query' => array(
 					'UPDATE categories SET `default` = 0'
@@ -5231,7 +5362,7 @@ class Organizr
 	public function clearGroupDefault()
 	{
 		$response = [
-			array(
+				array(
 				'function' => 'query',
 				'query' => array(
 					'UPDATE groups SET `default` = 0'
@@ -5258,7 +5389,8 @@ class Organizr
 			if ($this->qualifyRequest($tabInfo['group_id'], true)) {
 				return $tabInfo;
 			}
-		} else {
+		}
+		else {
 			$this->setAPIResponse('error', 'id not found', 404);
 			return false;
 		}
@@ -5267,7 +5399,7 @@ class Organizr
 	public function deleteTab($id)
 	{
 		$response = [
-			array(
+				array(
 				'function' => 'query',
 				'query' => array(
 					'DELETE FROM tabs WHERE id = ?',
@@ -5281,7 +5413,8 @@ class Organizr
 			$this->logger->debug('Deleted Tab [' . $tabInfo['name'] . ']');
 			$this->setAPIResponse('success', 'Tab deleted', 204);
 			return $this->processQueries($response);
-		} else {
+		}
+		else {
 			$this->setAPIResponse('error', 'id not found', 404);
 			return false;
 		}
@@ -5309,7 +5442,8 @@ class Organizr
 			if (!$this->qualifyLength($array['name'], 50, true)) {
 				return false;
 			}
-		} else {
+		}
+		else {
 			$this->setAPIResponse('error', 'Tab name was not supplied', 422);
 			return false;
 		}
@@ -5320,11 +5454,12 @@ class Organizr
 		if (!array_key_exists('image', $array)) {
 			$this->setAPIResponse('error', 'Tab image was not supplied', 422);
 			return false;
-		} else {
+		}
+		else {
 			$array['image'] = $this->sanitizeUserString($array['image']);
 		}
 		$response = [
-			array(
+				array(
 				'function' => 'query',
 				'query' => array(
 					'INSERT INTO [tabs]',
@@ -5351,7 +5486,8 @@ class Organizr
 		$tabInfo = $this->getTabById($id);
 		if ($tabInfo) {
 			$array = $this->checkKeys($tabInfo, $array);
-		} else {
+		}
+		else {
 			$this->setAPIResponse('error', 'No tab info found', 404);
 			return false;
 		}
@@ -5388,7 +5524,7 @@ class Organizr
 			}
 		}
 		$response = [
-			array(
+				array(
 				'function' => 'query',
 				'query' => array(
 					'UPDATE tabs SET',
@@ -5416,7 +5552,7 @@ class Organizr
 				$order = $tab['order'] ?? null;
 				if ($id && $order) {
 					$response = [
-						array(
+							array(
 							'function' => 'query',
 							'query' => array(
 								'UPDATE tabs set `order` = ? WHERE `id` = ?',
@@ -5427,11 +5563,13 @@ class Organizr
 					];
 					$this->processQueries($response);
 					$this->setAPIResponse(null, 'Tab Order updated');
-				} else {
+				}
+				else {
 					$this->setAPIResponse('error', 'data is malformed', 422);
 				}
 			}
-		} else {
+		}
+		else {
 			$this->setAPIResponse('error', 'data is empty or not in array', 422);
 			return false;
 		}
@@ -5456,18 +5594,20 @@ class Organizr
 			if (!$this->qualifyLength($array['category'], 50, true)) {
 				return false;
 			}
-		} else {
+		}
+		else {
 			$this->setAPIResponse('error', 'Category name was not supplied', 422);
 			return false;
 		}
 		if (!array_key_exists('image', $array)) {
 			$this->setAPIResponse('error', 'Category image was not supplied', 422);
 			return false;
-		} else {
+		}
+		else {
 			$array['image'] = $this->sanitizeUserString($array['image']);
 		}
 		$response = [
-			array(
+				array(
 				'function' => 'query',
 				'query' => array(
 					'INSERT INTO [categories]',
@@ -5494,7 +5634,8 @@ class Organizr
 		$categoryInfo = $this->getCategoryById($id);
 		if ($categoryInfo) {
 			$array = $this->checkKeys($categoryInfo, $array);
-		} else {
+		}
+		else {
 			$this->setAPIResponse('error', 'No category info found', 404);
 			return false;
 		}
@@ -5517,7 +5658,7 @@ class Organizr
 			}
 		}
 		$response = [
-			array(
+				array(
 				'function' => 'query',
 				'query' => array(
 					'UPDATE categories SET',
@@ -5545,7 +5686,7 @@ class Organizr
 				$order = $category['order'] ?? null;
 				if ($id && $order) {
 					$response = [
-						array(
+							array(
 							'function' => 'query',
 							'query' => array(
 								'UPDATE categories set `order` = ? WHERE `id` = ?',
@@ -5556,11 +5697,13 @@ class Organizr
 					];
 					$this->processQueries($response);
 					$this->setAPIResponse(null, 'Category Order updated');
-				} else {
+				}
+				else {
 					$this->setAPIResponse('error', 'data is malformed', 422);
 				}
 			}
-		} else {
+		}
+		else {
 			$this->setAPIResponse('error', 'data is empty or not in array', 422);
 			return false;
 		}
@@ -5569,7 +5712,7 @@ class Organizr
 	public function deleteCategory($id)
 	{
 		$response = [
-			array(
+				array(
 				'function' => 'query',
 				'query' => array(
 					'DELETE FROM categories WHERE id = ?',
@@ -5583,7 +5726,8 @@ class Organizr
 			$this->logger->debug('Deleted Category [' . $categoryInfo['category'] . ']');
 			$this->setAPIResponse('success', 'Category deleted', 204);
 			return $this->processQueries($response);
-		} else {
+		}
+		else {
 			$this->setAPIResponse('error', 'id not found', 404);
 			return false;
 		}
@@ -5643,7 +5787,8 @@ class Organizr
 		if (!isset($arrayLower[$theme])) {
 			$this->setAPIResponse('error', 'Theme does not exist in marketplace', 404);
 			return false;
-		} else {
+		}
+		else {
 			$key = array_search($theme, array_keys($arrayLower));
 			$theme = array_keys($array)[$key];
 		}
@@ -5655,7 +5800,8 @@ class Organizr
 				$this->logger->info('Remove File Failed  for: ' . $array['project_folder']);
 				return false;
 			}
-		} else {
+		}
+		else {
 			$this->setAPIResponse('error', 'Theme is not installed', 404);
 			return false;
 		}
@@ -5677,7 +5823,8 @@ class Organizr
 		if (!isset($arrayLower[$theme])) {
 			$this->setAPIResponse('error', 'Theme [' . $theme . '] does not exist in marketplace', 404, $arrayLower);
 			return false;
-		} else {
+		}
+		else {
 			$key = array_search($theme, array_keys($arrayLower));
 			$theme = array_keys($array)[$key];
 		}
@@ -5693,7 +5840,8 @@ class Organizr
 		$files = $this->getPluginFilesFromRepo($theme, $array);
 		if ($files) {
 			$downloadList = $this->themeFileListFormat($files, $array['project_folder']);
-		} else {
+		}
+		else {
 			$this->logger->warning('File list failed for: ' . $array['github_folder']);
 			$this->setAPIResponse('error', 'Could not get download list for theme', 409);
 			return false;
@@ -5774,12 +5922,14 @@ class Organizr
 			if ($response->success) {
 				$github = json_decode($response->body, true);
 				return $github['default_branch'] ?? null;
-			} else {
+			}
+			else {
 				$this->setLoggerChannel('Plugins');
 				$this->logger->warning('Plugin failed to get branch from Github', $this->apiResponseFormatter($response->body));
 				return false;
 			}
-		} catch (Requests_Exception $e) {
+		}
+		catch (Requests_Exception $e) {
 			$this->logger->error($e);
 			$this->setAPIResponse('error', $e->getMessage(), 401);
 			return false;
@@ -5798,12 +5948,14 @@ class Organizr
 			if ($response->success) {
 				$github = json_decode($response->body, true);
 				return is_array($github) ? $github : null;
-			} else {
+			}
+			else {
 				$this->setLoggerChannel('Plugins');
 				$this->logger->warning('Plugin failed to get branch from Github', $this->apiResponseFormatter($response->body));
 				return false;
 			}
-		} catch (Requests_Exception $e) {
+		}
+		catch (Requests_Exception $e) {
 			$this->logger->error($e);
 			$this->setAPIResponse('error', $e->getMessage(), 401);
 			return false;
@@ -5824,7 +5976,8 @@ class Organizr
 					$v['download_url'] = 'https://raw.githubusercontent.com/' . $repo . '/' . $branch . '/' . $v['path'];
 					if ($folder == 'root') {
 						$fileList[] = $v;
-					} else {
+					}
+					else {
 						if (stripos($v['path'], $folder) !== false) {
 							$v['path'] = (substr($v['path'], 0, strlen($folder)) == $folder) ? substr($v['path'], (strlen($folder) + 1)) : $v['path'];
 							$fileList[] = $v;
@@ -5841,7 +5994,8 @@ class Organizr
 	{
 		if (stripos($pluginDetails['repo'], 'github.com') !== false) {
 			$repo = explode('https://github.com/', $pluginDetails['repo']);
-		} else {
+		}
+		else {
 			return false;
 		}
 		$branch = $this->getBranchFromGithub($repo[1]);
@@ -5864,7 +6018,8 @@ class Organizr
 		if (!$arrayLower[$plugin]) {
 			$this->setAPIResponse('error', 'Plugin does not exist in marketplace', 404);
 			return false;
-		} else {
+		}
+		else {
 			$key = array_search($plugin, array_keys($arrayLower));
 			$plugin = array_keys($array)[$key];
 		}
@@ -5879,7 +6034,8 @@ class Organizr
 		$files = $this->getPluginFilesFromRepo($plugin, $array);
 		if ($files) {
 			$downloadList = $this->pluginFileListFormat($files, $array['project_folder']);
-		} else {
+		}
+		else {
 			$this->logger->warning('File list failed for: ' . $array['github_folder']);
 			$this->setAPIResponse('error', 'Could not get download list for plugin', 409);
 			return false;
@@ -5921,7 +6077,8 @@ class Organizr
 		if (!$arrayLower[$plugin]) {
 			$this->setAPIResponse('error', 'Plugin does not exist in marketplace', 404);
 			return false;
-		} else {
+		}
+		else {
 			$key = array_search($plugin, array_keys($arrayLower));
 			$plugin = array_keys($array)[$key];
 		}
@@ -5933,7 +6090,8 @@ class Organizr
 				$this->logger->info('Remove File Failed  for: ' . $array['project_folder']);
 				return false;
 			}
-		} else {
+		}
+		else {
 			$this->setAPIResponse('error', 'Plugin is not installed', 404);
 			return false;
 		}
@@ -6011,7 +6169,8 @@ class Organizr
 			if ($response->success) {
 				return json_decode($response->body, true);
 			}
-		} catch (Requests_Exception $e) {
+		}
+		catch (Requests_Exception $e) {
 			return false;
 		}
 		return false;
@@ -6055,13 +6214,15 @@ class Organizr
 				$response = Requests::get($repo, array(), $options);
 				if ($response->success) {
 					$themes = array_merge($themes, json_decode($response->body, true));
-				} else {
+				}
+				else {
 					$this->setLoggerChannel('Themes');
 					$this->logger->warning('Getting Marketplace items from Github', $this->apiResponseFormatter($response->body));
 					return false;
 				}
-			} catch (Requests_Exception $e) {
-				//return false;
+			}
+			catch (Requests_Exception $e) {
+			//return false;
 			}
 		}
 		return $themes;
@@ -6071,9 +6232,11 @@ class Organizr
 	{
 		if ($pluginDetails['needs_update']) {
 			return 'Update Available';
-		} elseif ($pluginDetails['installed']) {
+		}
+		elseif ($pluginDetails['installed']) {
 			return 'Up to date';
-		} else {
+		}
+		else {
 			return 'Not Installed';
 		}
 	}
@@ -6092,13 +6255,15 @@ class Organizr
 				$response = Requests::get($repo, array(), $options);
 				if ($response->success) {
 					$plugins = array_merge($plugins, json_decode($response->body, true));
-				} else {
+				}
+				else {
 					$this->setLoggerChannel('Plugins');
 					$this->logger->warning('Getting Marketplace items from Github', $this->apiResponseFormatter($response->body));
 					return false;
 				}
-			} catch (Requests_Exception $e) {
-				//return false;
+			}
+			catch (Requests_Exception $e) {
+			//return false;
 			}
 		}
 		return $plugins;
@@ -6108,7 +6273,8 @@ class Organizr
 	{
 		if (stripos($url, '.json') !== false) {
 			return $url;
-		} elseif (stripos($url, 'github.com') !== false) {
+		}
+		elseif (stripos($url, 'github.com') !== false) {
 			$repo = explode('https://github.com/', $url);
 			$newURL = 'https://api.github.com/repos/' . $repo[1] . '/contents';
 			$options = ($this->localURL($newURL)) ? array('verify' => false) : array();
@@ -6122,12 +6288,14 @@ class Organizr
 						}
 					}
 					return false;
-				} else {
+				}
+				else {
 					$this->setLoggerChannel('Plugins');
 					$this->logger->warning('Getting Marketplace JSON from Github', $this->apiResponseFormatter($response->body));
 					return false;
 				}
-			} catch (Requests_Exception $e) {
+			}
+			catch (Requests_Exception $e) {
 				return false;
 			}
 		}
@@ -6144,7 +6312,8 @@ class Organizr
 		$accessToken = $this->setGithubAccessToken();
 		if (count($accessToken) >= 1) {
 			return key($accessToken) . ': ' . $accessToken[key($accessToken)];
-		} else {
+		}
+		else {
 			return '';
 		}
 	}
@@ -6163,7 +6332,8 @@ class Organizr
 				$this->setAPIResponse('success', '', 200, $api);
 				return $api;
 			}
-		} catch (Requests_Exception $e) {
+		}
+		catch (Requests_Exception $e) {
 			$this->setResponse(500, $e->getMessage());
 			return false;
 		}
@@ -6199,7 +6369,8 @@ class Organizr
 				}
 				$this->setAPIResponse('success', '', 200, $sponsors);
 				return $sponsors;
-			} catch (\PHPHtmlParser\Exceptions\ChildNotFoundException|\PHPHtmlParser\Exceptions\CircularException|\PHPHtmlParser\Exceptions\LogicalException|\PHPHtmlParser\Exceptions\StrictException|\PHPHtmlParser\Exceptions\ContentLengthException|\PHPHtmlParser\Exceptions\NotLoadedException $e) {
+			}
+			catch (\PHPHtmlParser\Exceptions\ChildNotFoundException|\PHPHtmlParser\Exceptions\CircularException|\PHPHtmlParser\Exceptions\LogicalException|\PHPHtmlParser\Exceptions\StrictException|\PHPHtmlParser\Exceptions\ContentLengthException|\PHPHtmlParser\Exceptions\NotLoadedException $e) {
 				$this->setAPIResponse('error', 'Error connecting to Github', 409);
 				return false;
 			}
@@ -6238,7 +6409,8 @@ class Organizr
 			if ($response->success) {
 				return json_decode($response->body, true);
 			}
-		} catch (Requests_Exception $e) {
+		}
+		catch (Requests_Exception $e) {
 			$this->setResponse(500, $e->getMessage());
 			return false;
 		}
@@ -6252,7 +6424,8 @@ class Organizr
 			$this->updateConfigItems($api['response']['data']);
 			$this->setAPIResponse(null, 'SMTP activated with Organizr SMTP account');
 			return true;
-		} else {
+		}
+		else {
 			return false;
 		}
 	}
@@ -6276,7 +6449,8 @@ class Organizr
 				}
 			}
 			rmdir($dir);
-		} elseif (file_exists($dir)) {
+		}
+		elseif (file_exists($dir)) {
 			unlink($dir);
 		}
 		return true;
@@ -6289,7 +6463,8 @@ class Organizr
 		$src = $this->cleanPath($src);
 		$dst = $this->cleanPath($dst);
 		if (is_dir($src)) {
-			if (!file_exists($dst)) : mkdir($dst);
+			if (!file_exists($dst)):
+				mkdir($dst);
 			endif;
 			$files = scandir($src);
 			foreach ($files as $file) {
@@ -6297,7 +6472,8 @@ class Organizr
 					$this->rcopy("$src/$file", "$dst/$file");
 				}
 			}
-		} elseif (file_exists($src)) {
+		}
+		elseif (file_exists($src)) {
 			copy($src, $dst);
 		}
 		return true;
@@ -6312,7 +6488,8 @@ class Organizr
 		$this->setLoggerChannel('File Management');
 		if ($zip->open($extractPath . $zipFile) != "true") {
 			$this->logger->warning('organizr could not unzip upgrade.zip');
-		} else {
+		}
+		else {
 			$this->logger->debug('organizr unzipped upgrade.zip');
 		}
 		/* Extract Zip File */
@@ -6336,11 +6513,11 @@ class Organizr
 		$newfname = $folderPath . $path;
 		$context = stream_context_create(
 			array(
-				'ssl' => array(
-					'verify_peer' => true,
-					'cafile' => $this->getCert()
-				)
+			'ssl' => array(
+				'verify_peer' => true,
+				'cafile' => $this->getCert()
 			)
+		)
 		);
 		$file = fopen($url, 'rb', false, $context);
 		if ($file) {
@@ -6350,21 +6527,24 @@ class Organizr
 					fwrite($newf, fread($file, 1024 * 8), 1024 * 8);
 				}
 			}
-		} else {
+		}
+		else {
 			$this->logger->warning('Organizr could not download ' . $url);
 			return false;
 		}
 		if ($file) {
 			fclose($file);
 			$this->logger->debug('Organizr finished downloading the github zip file');
-		} else {
+		}
+		else {
 			$this->logger->warning('Organizr could not download the github zip file');
 			return false;
 		}
 		if ($newf) {
 			fclose($newf);
 			$this->logger->debug('Organizr created upgrade zip file from github zip file');
-		} else {
+		}
+		else {
 			$this->logger->warning('Organizr could not create upgrade zip file from github zip file');
 			return false;
 		}
@@ -6376,17 +6556,18 @@ class Organizr
 		if (((stripos($from, 'api.github.com') !== false) || (stripos($from, 'raw.githubusercontent.com') !== false)) && $this->config['githubAccessToken'] !== '') {
 			$context = stream_context_create(
 				array(
-					'ssl' => array(
-						'verify_peer' => false,
-						'cafile' => $this->getCert()
-					),
-					'http' => array(
-						'method' => 'GET',
-						'header' => $this->formatGithubAccessToken()
-					)
+				'ssl' => array(
+					'verify_peer' => false,
+					'cafile' => $this->getCert()
+				),
+				'http' => array(
+					'method' => 'GET',
+					'header' => $this->formatGithubAccessToken()
 				)
+			)
 			);
-		} else {
+		}
+		else {
 			$context = stream_context_create([]);
 		}
 		ini_set('max_execution_time', 0);
@@ -6401,19 +6582,22 @@ class Organizr
 					fwrite($newf, fread($file, 1024 * 8), 1024 * 8);
 				}
 			}
-		} else {
+		}
+		else {
 			$this->logger->warning('Organizr could not download file');
 		}
 		if ($file) {
 			fclose($file);
 			$this->logger->debug('Organizr finished downloading the file');
-		} else {
+		}
+		else {
 			$this->logger->warning('Organizr could not download file');
 		}
 		if ($newf) {
 			fclose($newf);
 			$this->logger->debug('Organizr saved and/or moved the file');
-		} else {
+		}
+		else {
 			$this->logger->warning('Organizr could not save and/or move the file');
 		}
 		return true;
@@ -6422,7 +6606,7 @@ class Organizr
 	public function getAllUsers($includeGroups = false)
 	{
 		$response = [
-			array(
+				array(
 				'function' => 'fetchAll',
 				'query' => array(
 					'SELECT * FROM users'
@@ -6447,7 +6631,7 @@ class Organizr
 	public function getAllGroups()
 	{
 		$response = [
-			array(
+				array(
 				'function' => 'fetchAll',
 				'query' => array(
 					'SELECT * FROM groups ORDER BY group_id ASC'
@@ -6480,7 +6664,8 @@ class Organizr
 					if (!$newUser) {
 						$this->setLoggerChannel('User Management');
 						$this->logger->warning('An error occurred during user import');
-					} else {
+					}
+					else {
 						$imported++;
 					}
 				}
@@ -6532,7 +6717,8 @@ class Organizr
 											'id' => (string)$child['id'],
 										);
 									}
-								} elseif ($friendsOnly) {
+								}
+								elseif ($friendsOnly) {
 									$machineMatches = false;
 									foreach ($child->Server as $server) {
 										if ((string)$server['machineIdentifier'] == $this->config['plexID']) {
@@ -6548,7 +6734,8 @@ class Organizr
 											'shareId' => (string)$shareId
 										);
 									}
-								} else {
+								}
+								else {
 									$results[] = array(
 										'username' => (string)$child['username'],
 										'email' => (string)$child['email'],
@@ -6562,7 +6749,8 @@ class Organizr
 				}
 			}
 			return false;
-		} catch (Requests_Exception $e) {
+		}
+		catch (Requests_Exception $e) {
 			$this->setLoggerChannel('User Management');
 			$this->logger->error($e);
 		}
@@ -6591,7 +6779,8 @@ class Organizr
 										'email' => $email
 									);
 								}
-							} else {
+							}
+							else {
 								$results[] = array(
 									'username' => (string)$child['Name'],
 									'email' => $email,
@@ -6603,7 +6792,8 @@ class Organizr
 				}
 			}
 			return false;
-		} catch (Requests_Exception $e) {
+		}
+		catch (Requests_Exception $e) {
 			$this->setLoggerChannel('User Management');
 			$this->logger->error($e);
 		}
@@ -6632,7 +6822,8 @@ class Organizr
 										'email' => $email
 									);
 								}
-							} else {
+							}
+							else {
 								$results[] = array(
 									'username' => (string)$child['Name'],
 									'email' => $email,
@@ -6644,7 +6835,8 @@ class Organizr
 				}
 			}
 			return false;
-		} catch (Requests_Exception $e) {
+		}
+		catch (Requests_Exception $e) {
 			$this->setLoggerChannel('User Management');
 			$this->logger->error($e);
 		}
@@ -6680,7 +6872,8 @@ class Organizr
 		$user = $this->getUserById($id);
 		if ($user) {
 			$array = $this->checkKeys($user, $array);
-		} else {
+		}
+		else {
 			$this->setAPIResponse('error', 'User was not found', 404);
 			return false;
 		}
@@ -6709,7 +6902,8 @@ class Organizr
 			}
 			if ($this->validateEmail($array['email'])) {
 				$array['email'] = $this->sanitizeEmail($array['email']);
-			} else {
+			}
+			else {
 				$this->setResponse(409, 'Email is not a valid email', ['email' => $array['email']]);
 				return false;
 			}
@@ -6724,8 +6918,8 @@ class Organizr
 		if (array_key_exists('group_id', $array)) {
 			if ($array['group_id'] == '') {
 				$array['group_id'] = 0;
-				//$this->setAPIResponse('error', 'group_id was set but empty', 409);
-				//return false;
+			//$this->setAPIResponse('error', 'group_id was set but empty', 409);
+			//return false;
 			}
 			if (!$this->qualifyRequest('1', false)) {
 				$this->setAPIResponse('error', 'Cannot change your own group_id', 401);
@@ -6745,8 +6939,8 @@ class Organizr
 			}
 		}
 		if (array_key_exists('locked', $array)) {
-			//$this->setAPIResponse('error', 'Cannot use endpoint to unlock or lock user - please use /users/{id}/lock', 409);
-			//return false;
+		//$this->setAPIResponse('error', 'Cannot use endpoint to unlock or lock user - please use /users/{id}/lock', 409);
+		//return false;
 		}
 		if (array_key_exists('password', $array)) {
 			if ($array['password'] == '') {
@@ -6763,7 +6957,7 @@ class Organizr
 			return false;
 		}
 		$response = [
-			array(
+				array(
 				'function' => 'query',
 				'query' => array(
 					'UPDATE users SET',
@@ -6782,7 +6976,7 @@ class Organizr
 	public function deleteUser($id)
 	{
 		$response = [
-			array(
+				array(
 				'function' => 'query',
 				'query' => array(
 					'DELETE FROM users WHERE id = ?',
@@ -6818,7 +7012,8 @@ class Organizr
 		if ($username == '') {
 			$this->setResponse(409, 'Username was set but empty');
 			return false;
-		} else {
+		}
+		else {
 			$username = $this->sanitizeUserString($username);
 		}
 		if (!$password) {
@@ -6835,7 +7030,8 @@ class Organizr
 		}
 		if ($this->validateEmail($email)) {
 			$email = $this->sanitizeEmail($email);
-		} else {
+		}
+		else {
 			$this->setResponse(409, 'Email is not a valid email', ['email' => $email]);
 			return false;
 		}
@@ -6852,7 +7048,8 @@ class Organizr
 		if ($this->createUser($username, $password, $email)) {
 			$this->logger->info('Account created for [' . $username . ']');
 			return true;
-		} else {
+		}
+		else {
 			$this->logger->warning('An error occurred');
 			return false;
 		}
@@ -6878,7 +7075,8 @@ class Organizr
 		}
 		if ($this->validateEmail($email)) {
 			$email = $this->sanitizeEmail($email);
-		} else {
+		}
+		else {
 			$this->setResponse(409, 'Email is not a valid email', ['email' => $email]);
 			return false;
 		}
@@ -6906,7 +7104,7 @@ class Organizr
 			'register_date' => gmdate('Y-m-d H:i:s'),
 		];
 		$response = [
-			array(
+				array(
 				'function' => 'query',
 				'query' => array(
 					'INSERT INTO [users]',
@@ -6931,7 +7129,8 @@ class Organizr
 		$groupInfo = $this->getGroupById($id);
 		if ($groupInfo) {
 			$array = $this->checkKeys($groupInfo, $array);
-		} else {
+		}
+		else {
 			$this->setAPIResponse('error', 'No category info found', 404);
 			return false;
 		}
@@ -6971,7 +7170,7 @@ class Organizr
 			}
 		}
 		$response = [
-			array(
+				array(
 				'function' => 'query',
 				'query' => array(
 					'UPDATE groups SET',
@@ -6990,7 +7189,7 @@ class Organizr
 	public function deleteGroup($id)
 	{
 		$response = [
-			array(
+				array(
 				'function' => 'query',
 				'query' => array(
 					'DELETE FROM groups WHERE id = ?',
@@ -7012,7 +7211,8 @@ class Organizr
 			$this->logger->info('Deleted Group [' . $groupInfo['group'] . ']');
 			$this->setAPIResponse('success', 'Group deleted', 204);
 			return $this->processQueries($response);
-		} else {
+		}
+		else {
 			$this->setAPIResponse('error', 'id not found', 404);
 			return false;
 		}
@@ -7036,7 +7236,8 @@ class Organizr
 			if (!$this->qualifyLength($array['group'], 50, true)) {
 				return false;
 			}
-		} else {
+		}
+		else {
 			$this->setAPIResponse('error', 'Group name was not supplied', 422);
 			return false;
 		}
@@ -7046,12 +7247,13 @@ class Organizr
 				return false;
 			}
 			$array['image'] = $this->sanitizeUserString($array['image']);
-		} else {
+		}
+		else {
 			$this->setAPIResponse('error', 'Group image was not supplied', 422);
 			return false;
 		}
 		$response = [
-			array(
+				array(
 				'function' => 'query',
 				'query' => array(
 					'INSERT INTO [groups]',
@@ -7093,7 +7295,8 @@ class Organizr
 							$libraryList = array_change_key_case($libraryList, CASE_LOWER);
 							return $libraryList;
 						}
-					} catch (Requests_Exception $e) {
+					}
+					catch (Requests_Exception $e) {
 						$this->setLoggerChannel('User Management');
 						$this->logger->error($e);
 					}
@@ -7126,7 +7329,8 @@ class Organizr
 	{
 		if (file_exists($file)) {
 			return filesize($file) > 0;
-		} else {
+		}
+		else {
 			return false;
 		}
 	}
@@ -7144,11 +7348,11 @@ class Organizr
 		}
 		$context = stream_context_create(
 			array(
-				'ssl' => array(
-					'verify_peer' => true,
-					'cafile' => $useCert
-				)
+			'ssl' => array(
+				'verify_peer' => true,
+				'cafile' => $useCert
 			)
+		)
 		);
 		if (!$this->checkValidCert($file) || (file_exists($file) && time() - 2592000 > filemtime($file))) {
 			file_put_contents($file, fopen($url, 'r', false, $context));
@@ -7178,7 +7382,8 @@ class Organizr
 			$this->setAPIResponse(null, pathinfo($_FILES['file']['name'], PATHINFO_BASENAME) . ' has been uploaded', null);
 			$this->makeDir($this->root . DIRECTORY_SEPARATOR . 'data' . DIRECTORY_SEPARATOR . 'cert');
 			return move_uploaded_file($tempFile, $targetFile);
-		} else {
+		}
+		else {
 			$this->setAPIResponse('error', pathinfo($_FILES['file']['name'], PATHINFO_BASENAME) . ' is not approved to be uploaded', 403);
 			return false;
 		}
@@ -7251,7 +7456,8 @@ class Organizr
 			$code = (!empty($success) && empty($errors)) ? 200 : 422;
 			$this->setAPIResponse($status, $msg, $code);
 			return (!empty($success) && empty($errors));
-		} catch (Requests_Exception $e) {
+		}
+		catch (Requests_Exception $e) {
 			$this->setLoggerChannel('User Management');
 			$this->logger->error($e);
 			$this->setAPIResponse('error', 'An Error Occurred', 409);
@@ -7278,7 +7484,7 @@ class Organizr
 			return false;
 		}
 		$response = [
-			array(
+				array(
 				'function' => 'query',
 				'query' => array(
 					'UPDATE users SET',
@@ -7316,7 +7522,7 @@ class Organizr
 			return false;
 		}
 		$response = [
-			array(
+				array(
 				'function' => 'query',
 				'query' => array(
 					'UPDATE users SET',
@@ -7332,7 +7538,7 @@ class Organizr
 		return $this->processQueries($response);
 	}
 
-public function youtubeSearch($query)
+	public function youtubeSearch($query)
 	{
 		if (!$query) {
 			$this->setAPIResponse('error', 'No query supplied', 422);
@@ -7356,7 +7562,8 @@ public function youtubeSearch($query)
 			$results = json_decode($response->body, true);
 			$this->setAPIResponse('success', null, 200, $results);
 			return $results;
-		} else {
+		}
+		else {
 			$this->setAPIResponse('error', 'Bad response from YouTube', 500);
 			return false;
 		}
@@ -7393,11 +7600,13 @@ public function youtubeSearch($query)
 				}
 				$this->setAPIResponse('success', null, 200, $data);
 				return $data;
-			} else {
+			}
+			else {
 				$this->setAPIResponse('error', 'Error getting successful response', 500);
 				return false;
 			}
-		} catch (Requests_Exception $e) {
+		}
+		catch (Requests_Exception $e) {
 			$this->setResponse(500, $e->getMessage());
 			return false;
 		}
@@ -7421,13 +7630,15 @@ public function youtubeSearch($query)
 			}
 			if (is_numeric($instance)) {
 				return $list[$instance][$type];
-			} else {
+			}
+			else {
 				return $list;
 			}
 		}
 		if (is_numeric($instance)) {
 			return $list[$instance];
-		} else {
+		}
+		else {
 			return $list;
 		}
 	}
@@ -7618,7 +7829,8 @@ public function youtubeSearch($query)
 				$error = true;
 				$this->setAPIResponse('error', 'Multiple URLs found in field, please use /api/v2/multiple/socks endpoint', 409);
 			}
-		} else {
+		}
+		else {
 			if ($multiple) {
 				$error = true;
 				$this->setAPIResponse('error', 'Multiple endpoint accessed but multiple URLs not found in field, please use /api/v2/socks endpoint', 409);
@@ -7636,7 +7848,8 @@ public function youtubeSearch($query)
 			// sent url twice since we arent using tokens
 			$list = $this->csvHomepageUrlToken($this->config[$url], $this->config[$url]);
 			$appURL = $list[$instance]['url'];
-		} else {
+		}
+		else {
 			$pre = explode('/api/v2/socks/', $requestObject->getUri()->getPath());
 			$appURL = $this->config[$url];
 		}
@@ -7692,15 +7905,18 @@ public function youtubeSearch($query)
 					if (count($logData) > $size) {
 						$logData = 'Count too large to output';
 					}
-				} else {
+				}
+				else {
 					$logData = $call->body;
 				}
-			} else {
+			}
+			else {
 				$logData = 'Debug not enabled';
 			}
 			$this->setLoggerChannel('Socks')->debug('Socks Response', ['body' => $logData, 'debug' => $debugInformation]);
 			return $call->body;
-		} catch (Requests_Exception $e) {
+		}
+		catch (Requests_Exception $e) {
 			$this->setResponse(500, $e->getMessage());
 			$this->setLoggerChannel('Socks')->critical($e, $debugInformation);
 			return null;
@@ -7738,7 +7954,8 @@ public function youtubeSearch($query)
 								'owned' => (float)$server['owned'],
 							);
 						}
-					} else {
+					}
+					else {
 						$items[] = array(
 							'name' => (string)$server['name'],
 							'address' => (string)$server['address'],
@@ -7749,13 +7966,15 @@ public function youtubeSearch($query)
 				}
 				$this->setResponse(200, null, $items);
 				return $items;
-			} else {
+			}
+			else {
 				$message = $this->testAndFormatString($response->body);
 				$this->setResponse(500, 'Plex Error occurred', $message['data']);
 				$this->setLoggerChannel('Plex Connection')->warning('Plex Error', $message);
 				return $message;
 			}
-		} catch (Requests_Exception $e) {
+		}
+		catch (Requests_Exception $e) {
 			$this->setLoggerChannel('Plex Connection')->error($e);
 			$this->setResponse(500, $e->getMessage());
 			return false;
@@ -7780,7 +7999,8 @@ public function youtubeSearch($query)
 					if (stripos($v['text'], $term) !== false) {
 						$goodIcons['results'][] = $v;
 					}
-				} else {
+				}
+				else {
 					$goodIcons['results'][] = $v;
 				}
 			}
@@ -7795,7 +8015,7 @@ public function youtubeSearch($query)
 	public function getJournalMode()
 	{
 		$response = [
-			array(
+				array(
 				'function' => 'fetch',
 				'query' => 'PRAGMA journal_mode',
 			),
@@ -7804,10 +8024,12 @@ public function youtubeSearch($query)
 		if ($query) {
 			if ($query['journal_mode']) {
 				$this->setResponse(200, null, $query);
-			} else {
+			}
+			else {
 				$this->setResponse(500, 'Error getting Journal Mode');
 			}
-		} else {
+		}
+		else {
 			$this->setResponse(404, 'Journal Mode not found');
 		}
 		return $query;
@@ -7824,7 +8046,7 @@ public function youtubeSearch($query)
 				return false;
 		}
 		$response = [
-			array(
+				array(
 				'function' => 'fetch',
 				'query' => 'PRAGMA journal_mode = \'' . $option . '\';',
 			),
@@ -7833,10 +8055,12 @@ public function youtubeSearch($query)
 		if ($query) {
 			if ($query['journal_mode']) {
 				$this->setResponse(200, 'Journal Mode updated to: ' . $option, $query);
-			} else {
+			}
+			else {
 				$this->setResponse(500, 'Error getting Journal Mode');
 			}
-		} else {
+		}
+		else {
 			$this->setResponse(404, 'Journal Mode not found');
 		}
 		return $query;
@@ -7855,7 +8079,8 @@ public function youtubeSearch($query)
 			$schedule = new Cron\CronExpression($schedule);
 			$this->setResponse(200, 'Schedule was validated');
 			return true;
-		} catch (InvalidArgumentException $e) {
+		}
+		catch (InvalidArgumentException $e) {
 			$this->setResponse(500, $e->getMessage());
 			return false;
 		}
@@ -7872,7 +8097,8 @@ public function youtubeSearch($query)
 		if ($testFolder) {
 			$this->setResponse(200, 'Folder approved for logs');
 			return true;
-		} else {
+		}
+		else {
 			$this->setResponse(409, 'Folder path is not valid or permissions insufficient');
 			return false;
 		}
@@ -7919,7 +8145,8 @@ public function youtubeSearch($query)
 				$query[$key] = $this->cleanDatabaseQuery($value);
 			}
 			return $query;
-		} else {
+		}
+		else {
 			return $this->replaceStringInDatabase($query);
 		}
 	}
@@ -7964,7 +8191,8 @@ public function youtubeSearch($query)
 					default:
 						return false;
 				}
-			} catch (Exception $e) {
+			}
+			catch (Exception $e) {
 				$this->setLoggerChannel('Database');
 				$this->logger->critical($e, $v['query']);
 				return false;

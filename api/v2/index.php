@@ -22,6 +22,7 @@
  *   name="Token"
  * )
  */
+error_reporting(E_ALL & ~E_DEPRECATED & ~E_NOTICE);
 require_once '../functions.php';
 
 use Psr\Http\Message\ResponseInterface as Response;
@@ -61,7 +62,8 @@ function getBasePath()
 	$uriUse = str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME']));
 	if (stripos($uri, 'api/v2/') !== false) {
 		return $uriUse;
-	} else {
+	}
+	else {
 		return '';
 	}
 }
@@ -69,7 +71,7 @@ function getBasePath()
 function overWriteURI()
 {
 	$uri = $_SERVER['REQUEST_URI'];
-	$query = $_SERVER['QUERY_STRING'];
+	$query = $_SERVER['QUERY_STRING'] ?? '';
 	if (stripos($query, 'group=') !== false) {
 		$group = explode('group=', $query);
 		$_SERVER['REQUEST_URI'] = 'auth-' . $group[1];
@@ -158,7 +160,7 @@ $app->any('{route:.*}', function ($request, $response) {
 	$GLOBALS['responseCode'] = 404;
 	$response->getBody()->write(jsonE($GLOBALS['api']));
 	return $response
-		->withHeader('Content-Type', 'application/json;charset=UTF-8')
-		->withStatus($GLOBALS['responseCode']);
+	->withHeader('Content-Type', 'application/json;charset=UTF-8')
+	->withStatus($GLOBALS['responseCode']);
 });
 $app->run();
