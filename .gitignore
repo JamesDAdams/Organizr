@@ -180,6 +180,7 @@ api/plugins/*
 !api/plugins/shuck-stop/
 api/plugins/shuck-stop/drives.json
 !api/plugins/komga/
+!api/plugins/wallos/
 
 # =========================
 # Custom files

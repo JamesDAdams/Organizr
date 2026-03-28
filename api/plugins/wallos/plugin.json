@@ -1,0 +1,14 @@
+{
+  "Wallos": {
+    "repo": "",
+    "author": "JamesAdams",
+    "category": "Subscriptions",
+    "description": "Display Wallos subscriptions on the homepage",
+    "icon": "plugins/images/wallos.png",
+    "version": "1.0.0",
+    "minimum_organizr_version": "2.1.0",
+    "github_folder": "wallos",
+    "project_folder": "wallos",
+    "license": "personal"
+  }
+}
