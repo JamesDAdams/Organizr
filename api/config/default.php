@@ -377,7 +377,7 @@ return [
 	'homepageOrderAdguard' => '42',
 	'homepageOrderProwlarr' => '43',
 	'homepageOrderUptimeKuma' => '44',
-  'homepageOrderPromPage' => '45',
+	'homepageOrderPromPage' => '45',
 	'homepageOrderEmbyLiveTVTracker' => '46',
 	'homepageOrderUserWatchStats' => '47',
 	'homepageOrderJellyStat' => '48',

@@ -70,6 +70,7 @@ class Organizr
 	use UptimeKumaHomepageItem;
 	use JellyStatHomepageItem;
 	use PromPageHomepageItem;
+	use WallosHomepageItem;
 
 
 	// ===================================
@@ -1214,6 +1215,10 @@ class Organizr
 							if ($pluginEnabled || $settings) {
 								if ($continue) {
 									$version = $GLOBALS['pluginInfo'][strtolower($key)]['version'] ?? $this->fileHash;
+									// Debug: log when Wallos JS is included so we can verify client-side inclusion
+									if (strtolower($key) === 'wallos') {
+										$this->log('Wallos Plugin')->info('Including Wallos JS on page', ['file' => $info->getPathname()]);
+									}
 									$files .= '<script src="' . $rootPath . $webDirectory . basename(dirname($info->getPathname())) . '/' . basename($info->getFilename()) . '?v=' . $version . '" defer="true"></script>';
 								}
 							}
@@ -5287,7 +5292,7 @@ class Organizr
 		];
 		return $this->processQueries($response);
 	}
-	
+
 	public function getNextCategoryId()
 	{
 		$response = [
@@ -7547,7 +7552,7 @@ public function youtubeSearch($query)
 		*/
 		;( function( window ) {
 			\'use strict\';
-		
+
 			function extend( a, b ) {
 				for( var key in b ) {
 					if( b.hasOwnProperty( key ) ) {
@@ -7556,18 +7561,18 @@ public function youtubeSearch($query)
 				}
 				return a;
 			}
-		
+
 			function CBPFWTabs( el, options ) {
 				this.el = el;
 				this.options = extend( {}, this.options );
 				extend( this.options, options );
 				this._init();
 			}
-		
+
 			CBPFWTabs.prototype.options = {
 				start : 0
 			};
-		
+
 			CBPFWTabs.prototype._init = function() {
 				// tabs elems
 				this.tabs = [].slice.call( this.el.querySelectorAll( \'nav > ul > li\' ) );
@@ -7591,7 +7596,7 @@ public function youtubeSearch($query)
 				// init events
 				this._initEvents();
 			};
-		
+
 			CBPFWTabs.prototype._initEvents = function() {
 				var self = this;
 				this.tabs.forEach( function( tab, idx ) {
@@ -7601,7 +7606,7 @@ public function youtubeSearch($query)
 					} );
 				} );
 			};
-		
+
 			CBPFWTabs.prototype._show = function( idx ) {
 				if( this.current >= 0 ) {
 					this.tabs[ this.current ].className = this.items[ this.current ].className = \'\';
@@ -7611,10 +7616,10 @@ public function youtubeSearch($query)
 				this.tabs[ this.current ].className = \'tab-current\';
 				this.items[ this.current ].className = \'content-current\';
 			};
-		
+
 			// add to global namespace
 			window.CBPFWTabs = CBPFWTabs;
-		
+
 		})( window );
 		</script>
 		';
